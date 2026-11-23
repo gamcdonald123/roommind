@@ -1,9 +1,16 @@
 import { LitElement, html, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import type { HomeAssistant, PriceStatus } from "../../types";
 import { floorGroups, type AreaInfo, type FloorOrder } from "../../utils/dashboard";
 import { hasDevices } from "../../utils/room-state";
+import {
+  allRoomsMessage,
+  allRoomsOptions,
+  allRoomsValueOf,
+  type AllRoomsValue,
+} from "../../utils/override";
+import { errorText } from "../../utils/errors";
 import { localize, type TranslationKey } from "../../utils/localize";
 import { formatTempLocale, tempUnit } from "../../utils/temperature";
 import { VACATION_SENTINEL } from "../../utils/constants";
@@ -11,6 +18,8 @@ import { tokens } from "../../styles/tokens";
 import { dashboardStyles } from "./dashboard-styles";
 import "./rs-room-card";
 import "../shared/rs-pill";
+import "../shared/rs-segmented";
+import "../shared/rs-info-icon";
 
 export interface HouseSummary {
   vacationActive: boolean;
@@ -21,6 +30,9 @@ export interface HouseSummary {
   priceEntity: string;
   priceStatus: PriceStatus | null;
 }
+
+/** How long a just-picked all-rooms choice waits for the poll to confirm it. */
+const PENDING_TIMEOUT_MS = 8000;
 
 const PRICE_LEVEL_KEYS: Record<"cheap" | "normal" | "expensive", TranslationKey> = {
   cheap: "settings.price_level_cheap",
@@ -40,6 +52,8 @@ export class RsDashboard extends LitElement {
   @property({ type: String }) public controlMode: "mpc" | "bangbang" = "mpc";
   @property({ type: Boolean }) public climateControlActive = true;
   @property({ attribute: false }) public summary!: HouseSummary;
+  @state() private _pending: { value: AllRoomsValue; since: number } | null = null;
+  @state() private _error = "";
 
   static styles = [tokens, dashboardStyles];
 
@@ -63,7 +77,7 @@ export class RsDashboard extends LitElement {
     }
     const groups = floorGroups(visible, this.hass, this.groupByFloor, this.floorOrder);
     return html`
-      ${this._renderPills(visible)}
+      ${this._renderPills(visible)} ${this._renderAllRooms()}
       ${groups.map(
         (g) => html`
           ${
@@ -166,6 +180,58 @@ export class RsDashboard extends LitElement {
     return html`<div class="pills" role="list" aria-label=${localize("panel.pill.label", l)}>
       ${pills.map((p) => html`<span role="listitem">${p}</span>`)}
     </div>`;
+  }
+
+  /** Rooms the all-rooms choice applies to, hidden ones included (same rule as the backend). */
+  private _controlled(): AreaInfo[] {
+    return this.infos.filter((i) => hasDevices(i.config) && !i.config?.is_outdoor);
+  }
+
+  protected willUpdate(changed: Map<string, unknown>): void {
+    if (changed.has("infos") && this._pending) {
+      const actual = allRoomsValueOf(this._controlled().map((i) => i.config?.live));
+      if (actual === this._pending.value || Date.now() - this._pending.since > PENDING_TIMEOUT_MS) {
+        this._pending = null;
+      }
+    }
+  }
+
+  private _renderAllRooms() {
+    const rooms = this._controlled();
+    // One room has its own choice on its card
+    if (rooms.length < 2) return nothing;
+    const l = this.hass.language;
+    const value = this._pending
+      ? this._pending.value
+      : allRoomsValueOf(rooms.map((i) => i.config?.live));
+    return html`<div class="all-rooms">
+      <div class="all-rooms-head">
+        <span>${localize("all_rooms.label", l)}</span>
+        <rs-info-icon .text=${localize("all_rooms.hint", l)}></rs-info-icon>
+      </div>
+      <rs-segmented
+        .label=${localize("all_rooms.label", l)}
+        .options=${allRoomsOptions(l)}
+        .value=${value}
+        @value-changed=${this._onAllRooms}
+      ></rs-segmented>
+      ${this._error ? html`<div class="error" role="alert">${this._error}</div>` : nothing}
+    </div>`;
+  }
+
+  private async _onAllRooms(e: CustomEvent<{ value: AllRoomsValue }>) {
+    e.stopPropagation();
+    const value = e.detail.value;
+    this._pending = { value, since: Date.now() };
+    this._error = "";
+    try {
+      await this.hass.callWS(allRoomsMessage(value));
+      this.dispatchEvent(new CustomEvent("room-updated", { bubbles: true, composed: true }));
+    } catch (err) {
+      this._pending = null;
+      const l = this.hass.language;
+      this._error = errorText(err, localize("override.error_set", l), l);
+    }
   }
 
   private _requestEdit() {

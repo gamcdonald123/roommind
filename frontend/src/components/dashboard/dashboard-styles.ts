@@ -32,6 +32,26 @@ export const dashboardStyles = css`
     font-variant-numeric: tabular-nums;
   }
 
+  .all-rooms {
+    margin: 0 0 16px;
+  }
+
+  .all-rooms-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+
+  .all-rooms .error {
+    margin: 6px 4px 0;
+    font-size: 13px;
+    color: var(--error-color);
+  }
+
   .pills {
     display: flex;
     flex-wrap: wrap;

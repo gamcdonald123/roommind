@@ -6,7 +6,7 @@ export type ClimateMode = "auto" | "heat_only" | "cool_only";
 
 export type RoomMode = "idle" | "heating" | "cooling";
 
-export type OverrideType = "boost" | "eco" | "custom";
+export type OverrideType = "boost" | "eco" | "custom" | "frost";
 
 export interface NotificationTarget {
   entity_id: string;

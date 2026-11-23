@@ -32,6 +32,8 @@
   "override.eco": "Eco",
   "override.away": "Ausente",
   "override.custom": "Personalizada",
+  "override.frost": "Antiheladas",
+  "override.frost_short": "Antiheladas",
   "override.target": "Objetivo",
   "override.heat_to": "Calentar a",
   "override.cool_above": "Enfriar por encima de",
@@ -1165,5 +1167,7 @@
   "compressor.section_more": "Más",
   "compressor.setpoints": "Fijar consignas",
   "compressor.setpoints_hint": "El termostato recibe una consigna fija al calentar y al apagarse, p. ej. la temperatura de impulsión de una caldera. Desactivado: solo se cambia el modo.",
-  "vacation.section_during": "Durante las vacaciones"
+  "vacation.section_during": "Durante las vacaciones",
+  "all_rooms.label": "Todas las habitaciones",
+  "all_rooms.hint": "Se aplica a cada habitación hasta que lo cambies. Horario termina el ajuste manual en todas."
 }

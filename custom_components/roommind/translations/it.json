@@ -34,7 +34,8 @@
           "preset_mode": {
             "state": {
               "none": "Programma",
-              "manual": "Manuale"
+              "manual": "Manuale",
+              "frost": "Antigelo"
             }
           }
         }
@@ -43,6 +44,17 @@
     "binary_sensor": {
       "air_quality": {
         "name": "{room} qualità dell’aria scarsa"
+      }
+    },
+    "select": {
+      "all_rooms": {
+        "name": "Tutte le stanze",
+        "state": {
+          "schedule": "Programma",
+          "comfort": "Comfort",
+          "eco": "Eco",
+          "frost": "Antigelo"
+        }
       }
     }
   }

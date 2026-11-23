@@ -11,6 +11,7 @@ import type {
   RoomMode,
   PresenceAwayAction,
 } from "../types";
+import { FROST_ICON } from "./override";
 import { localize, type TranslationKey } from "./localize";
 import type { EffectiveOverride } from "./override";
 import { formatMinutes, formatNumber, formatRemaining } from "./format";
@@ -203,6 +204,7 @@ const OVERRIDE_TYPE_KEYS: Record<OverrideType, TranslationKey> = {
   boost: "override.comfort",
   eco: "override.eco",
   custom: "override.custom",
+  frost: "override.frost",
 };
 
 /** "18:00", or "Fr 18:00" when the time is not today. */
@@ -268,7 +270,9 @@ export function roomHints(
         ? "mdi:leaf"
         : live.override_type === "boost"
           ? "mdi:sofa"
-          : "mdi:thermometer";
+          : live.override_type === "frost"
+            ? FROST_ICON
+            : "mdi:thermometer";
     if (live.override_suppressed) {
       hints.push({
         id: "override",
@@ -644,6 +648,7 @@ const OVERRIDE_ICONS: Record<OverrideType, string> = {
   boost: "mdi:sofa",
   eco: "mdi:leaf",
   custom: "mdi:thermometer",
+  frost: FROST_ICON,
 };
 
 /** Hint for a room its "All in the same mode" group holds back: by the way the group runs (#533). */

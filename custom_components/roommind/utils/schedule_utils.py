@@ -20,10 +20,12 @@ from ..const import (
     DEFAULT_COMFORT_HEAT,
     DEFAULT_ECO_COOL,
     DEFAULT_ECO_HEAT,
+    DEFAULT_FROST_TEMP,
     MAX_TARGET_TEMP,
     MIN_TARGET_TEMP,
     OVERRIDE_BOOST,
     OVERRIDE_ECO,
+    OVERRIDE_FROST,
     SCHEDULE_UNREADABLE_HOLD_HOURS,
     TargetTemps,
     is_override_active,
@@ -125,12 +127,18 @@ def find_rejected_block_temps(
     return rejected
 
 
-def override_preset_band(room: dict, override_type: str) -> tuple[float, float]:
-    """Return the (heat, cool) band a boost/eco override stands for.
+def override_preset_band(room: dict, override_type: str, settings: dict | None = None) -> tuple[float, float]:
+    """Return the (heat, cool) band a boost/eco/frost override stands for.
 
     Both presets are bands in auto rooms, never a single point: collapsing eco
     to ``eco_heat`` on both sides makes an AC cool toward the heating target (#284).
+    Frost heats only to the frost temperature from *settings* and keeps cooling at eco,
+    like vacation does.
     """
+    if override_type == OVERRIDE_FROST:
+        frost = float((settings or {}).get("frost_temp", DEFAULT_FROST_TEMP))
+        eco_cool = room.get("eco_cool", DEFAULT_ECO_COOL)
+        return frost, max(frost, eco_cool)
     if override_type == OVERRIDE_ECO:
         return (
             room.get("eco_heat", room.get("eco_temp", DEFAULT_ECO_HEAT)),

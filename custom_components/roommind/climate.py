@@ -42,6 +42,7 @@ from .const import (
     OVERRIDE_BOOST,
     OVERRIDE_CUSTOM,
     OVERRIDE_ECO,
+    OVERRIDE_FROST,
     OVERRIDE_TURN_ON_REFRESH_DELAY_S,
     is_override_active,
 )
@@ -66,12 +67,19 @@ _CLIMATE_MODE_TO_HVAC = {
 _HVAC_TO_CLIMATE_MODE = {hvac: mode for mode, hvac in _CLIMATE_MODE_TO_HVAC.items()}
 # A held temperature from the slider, a display or a voice assistant
 PRESET_MANUAL = "manual"
+# Frost protection, also set for all rooms at once by select.roommind_all_rooms
+PRESET_FROST = "frost"
 _OVERRIDE_TO_PRESET: dict[str, str] = {
     OVERRIDE_BOOST: PRESET_COMFORT,
     OVERRIDE_ECO: PRESET_ECO,
     OVERRIDE_CUSTOM: PRESET_MANUAL,
+    OVERRIDE_FROST: PRESET_FROST,
 }
-_PRESET_TO_OVERRIDE: dict[str, str] = {PRESET_COMFORT: OVERRIDE_BOOST, PRESET_ECO: OVERRIDE_ECO}
+_PRESET_TO_OVERRIDE: dict[str, str] = {
+    PRESET_COMFORT: OVERRIDE_BOOST,
+    PRESET_ECO: OVERRIDE_ECO,
+    PRESET_FROST: OVERRIDE_FROST,
+}
 
 
 def _create_room_climates(
@@ -361,7 +369,7 @@ class RoomMindRoomClimate(CoordinatorEntity, ClimateEntity):
     _attr_min_temp = MIN_TARGET_TEMP
     _attr_max_temp = MAX_TARGET_TEMP
     _attr_translation_key = "room"
-    _attr_preset_modes = [PRESET_NONE, PRESET_COMFORT, PRESET_ECO, PRESET_MANUAL]
+    _attr_preset_modes = [PRESET_NONE, PRESET_COMFORT, PRESET_ECO, PRESET_FROST, PRESET_MANUAL]
 
     def __init__(self, coordinator: RoomMindCoordinator, area_id: str) -> None:
         super().__init__(coordinator)
@@ -599,7 +607,8 @@ class RoomMindRoomClimate(CoordinatorEntity, ClimateEntity):
             return
         override_type = _PRESET_TO_OVERRIDE.get(preset_mode)
         if override_type is not None:
-            await self._async_set_override(*override_preset_band(self._room(), override_type), override_type)
+            settings = self._store().get_settings()
+            await self._async_set_override(*override_preset_band(self._room(), override_type, settings), override_type)
             return
         await self._store().async_update_room(
             self._area_id,

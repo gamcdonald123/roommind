@@ -11,6 +11,7 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant, callback
 
 from .const import (
+    ALL_ROOMS_MODES,
     CLIMATE_MODES,
     CONFLICT_RESOLUTIONS,
     CONTROL_MODE_BANGBANG,
@@ -27,6 +28,7 @@ from .const import (
     MASTER_OFF_MODES,
     MASTER_OPTION_DEFAULTS,
     MAX_CO2_THRESHOLD,
+    MAX_FROST_TEMP,
     MAX_HUMIDITY_MAX,
     MAX_HUMIDITY_MIN,
     MAX_MASTER_DELAY_S,
@@ -34,6 +36,7 @@ from .const import (
     MAX_PRICE_SHIFT_K,
     MAX_TARGET_TEMP,
     MIN_CO2_THRESHOLD,
+    MIN_FROST_TEMP,
     MIN_HUMIDITY_MAX,
     MIN_HUMIDITY_MIN,
     MIN_MASTER_TEMPERATURE,
@@ -53,6 +56,7 @@ from .services.analytics_service import (
     _safe_float,  # noqa: F401 - re-exported for tests
     build_analytics_data,
 )
+from .utils.all_rooms import async_set_all_rooms
 from .utils.area_utils import REST_SWITCHED_OFF, ha_floor_order, rooms_with_area, rooms_without_area
 from .utils.device_utils import (
     COIL_DRY_INHERIT,
@@ -230,6 +234,7 @@ _SETTINGS_SAVE_FIELDS = (
     "learning_disabled_rooms",
     "hidden_rooms",
     "vacation_temp",
+    "frost_temp",
     "vacation_until",
     "prediction_enabled",
     "presence_enabled",
@@ -865,7 +870,7 @@ async def websocket_override_set(
             connection.send_error(msg["id"], "invalid", "Custom override requires heat and/or cool")
             return
     else:
-        heat, cool = override_preset_band(room, override_type)
+        heat, cool = override_preset_band(room, override_type, store.get_settings())
 
     heat, cool = mask_override_band(heat, cool, room.get("climate_mode", "auto"))
 
@@ -942,6 +947,28 @@ async def websocket_override_clear(
 
 
 # ---------------------------------------------------------------------------
+# All rooms at once
+# ---------------------------------------------------------------------------
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "roommind/override/set_all",
+        vol.Required("mode"): vol.In(ALL_ROOMS_MODES),
+    }
+)
+@websocket_api.async_response
+async def websocket_override_set_all(
+    hass: HomeAssistant,
+    connection: ActiveConnection,
+    msg: dict,
+) -> None:
+    """Put every room on schedule, comfort, eco or frost protection (until changed)."""
+    changed = await async_set_all_rooms(hass, msg["mode"])
+    connection.send_result(msg["id"], {"success": True, "changed": changed})
+
+
+# ---------------------------------------------------------------------------
 # Get settings
 # ---------------------------------------------------------------------------
 
@@ -981,6 +1008,7 @@ async def websocket_get_settings(
         vol.Optional("hidden_rooms"): [str],
         vol.Optional("prediction_enabled"): bool,
         vol.Optional("vacation_temp"): vol.Coerce(float),
+        vol.Optional("frost_temp"): vol.All(vol.Coerce(float), vol.Range(min=MIN_FROST_TEMP, max=MAX_FROST_TEMP)),
         vol.Optional("vacation_until"): vol.Any(vol.Coerce(float), None),
         vol.Optional("presence_enabled"): bool,
         vol.Optional("presence_persons"): [str],
@@ -1378,6 +1406,7 @@ def async_register_websocket_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_delete_room)
     websocket_api.async_register_command(hass, websocket_override_set)
     websocket_api.async_register_command(hass, websocket_override_clear)
+    websocket_api.async_register_command(hass, websocket_override_set_all)
     websocket_api.async_register_command(hass, websocket_get_settings)
     websocket_api.async_register_command(hass, websocket_save_settings)
     websocket_api.async_register_command(hass, websocket_get_analytics)

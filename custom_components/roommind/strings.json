@@ -34,7 +34,8 @@
           "preset_mode": {
             "state": {
               "none": "Schedule",
-              "manual": "Manual"
+              "manual": "Manual",
+              "frost": "Frost protection"
             }
           }
         }
@@ -43,6 +44,17 @@
     "binary_sensor": {
       "air_quality": {
         "name": "{room} air quality poor"
+      }
+    },
+    "select": {
+      "all_rooms": {
+        "name": "All rooms",
+        "state": {
+          "schedule": "Schedule",
+          "comfort": "Comfort",
+          "eco": "Eco",
+          "frost": "Frost protection"
+        }
       }
     }
   }

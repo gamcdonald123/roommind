@@ -10,7 +10,7 @@ DOMAIN = "roommind"
 VERSION = "2.0.1"
 
 # Platforms
-PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.CLIMATE]
+PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.BINARY_SENSOR, Platform.CLIMATE, Platform.SELECT]
 
 # Climate modes
 CLIMATE_MODE_AUTO = "auto"
@@ -22,7 +22,19 @@ CLIMATE_MODES = [CLIMATE_MODE_AUTO, CLIMATE_MODE_HEAT_ONLY, CLIMATE_MODE_COOL_ON
 OVERRIDE_BOOST = "boost"
 OVERRIDE_ECO = "eco"
 OVERRIDE_CUSTOM = "custom"
-OVERRIDE_TYPES = [OVERRIDE_BOOST, OVERRIDE_ECO, OVERRIDE_CUSTOM]
+# Frost protection: heats only to the frost temperature, cooling held at the room's eco
+OVERRIDE_FROST = "frost"
+OVERRIDE_TYPES = [OVERRIDE_BOOST, OVERRIDE_ECO, OVERRIDE_CUSTOM, OVERRIDE_FROST]
+# Settings key and default of the frost protection temperature (°C)
+DEFAULT_FROST_TEMP = 7.0
+MIN_FROST_TEMP = 5.0
+MAX_FROST_TEMP = 12.0
+# What the "all rooms" control sets every room to; "schedule" clears their overrides
+ALL_ROOMS_SCHEDULE = "schedule"
+ALL_ROOMS_COMFORT = "comfort"
+ALL_ROOMS_ECO = "eco"
+ALL_ROOMS_FROST = "frost"
+ALL_ROOMS_MODES = [ALL_ROOMS_SCHEDULE, ALL_ROOMS_COMFORT, ALL_ROOMS_ECO, ALL_ROOMS_FROST]
 # Grace period after the override entity is switched on before the seeded
 # override is evaluated; the caller's real targets normally arrive within it (#447).
 OVERRIDE_TURN_ON_REFRESH_DELAY_S = 3.0

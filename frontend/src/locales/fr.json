@@ -32,6 +32,8 @@
   "override.eco": "Éco",
   "override.away": "Absence",
   "override.custom": "Personnalisé",
+  "override.frost": "Hors-gel",
+  "override.frost_short": "Hors-gel",
   "override.target": "Cible",
   "override.heat_to": "Chauffer jusqu'à",
   "override.cool_above": "Refroidir au-dessus de",
@@ -1165,5 +1167,7 @@
   "compressor.section_more": "Plus",
   "compressor.setpoints": "Imposer les consignes",
   "compressor.setpoints_hint": "Le thermostat reçoit une consigne fixe en chauffe et à l'arrêt, par ex. la température de départ d'une chaudière. Désactivé : seul le mode est changé.",
-  "vacation.section_during": "Pendant les vacances"
+  "vacation.section_during": "Pendant les vacances",
+  "all_rooms.label": "Toutes les pièces",
+  "all_rooms.hint": "S'applique à chaque pièce jusqu'à ce que vous le changiez. Planning met fin au forçage partout."
 }

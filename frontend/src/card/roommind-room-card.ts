@@ -58,13 +58,15 @@ const OVERRIDE_KEYS: Record<OverrideType, TranslationKey> = {
   boost: "override.comfort",
   eco: "override.eco",
   custom: "override.custom",
+  frost: "override.frost",
 };
 
-/** Quick choice value of an override type; custom is the card's extra option. */
-const QUICK_OF: Record<OverrideType, QuickValue | "custom"> = {
+/** Quick choice value of an override type; custom is the card's extra option, frost (set for all rooms) has none. */
+const QUICK_OF: Record<OverrideType, QuickValue | "custom" | null> = {
   boost: "comfort",
   eco: "eco",
   custom: "custom",
+  frost: null,
 };
 
 const CLIMATE_MODES: { value: ClimateMode; icon: string; key: TranslationKey }[] = [

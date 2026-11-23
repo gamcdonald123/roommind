@@ -69,6 +69,11 @@ class TestCoverageGaps:
         entry_climate_control.unique_id = f"{DOMAIN}_climate_control"
         entry_climate_control.entity_id = "switch.roommind_climate_control"
 
+        entry_all_rooms = MagicMock()
+        entry_all_rooms.platform = DOMAIN
+        entry_all_rooms.unique_id = f"{DOMAIN}_all_rooms"
+        entry_all_rooms.entity_id = "select.roommind_all_rooms"
+
         mock_registry.entities.values.return_value = [
             entry_valid_temp,
             entry_valid_mode,
@@ -78,6 +83,7 @@ class TestCoverageGaps:
             entry_other,
             entry_vacation,
             entry_climate_control,
+            entry_all_rooms,
         ]
 
         with patch(

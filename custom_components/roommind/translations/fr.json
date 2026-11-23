@@ -34,7 +34,8 @@
           "preset_mode": {
             "state": {
               "none": "Planification",
-              "manual": "Manuel"
+              "manual": "Manuel",
+              "frost": "Hors-gel"
             }
           }
         }
@@ -43,6 +44,17 @@
     "binary_sensor": {
       "air_quality": {
         "name": "{room} qualité de l’air mauvaise"
+      }
+    },
+    "select": {
+      "all_rooms": {
+        "name": "Toutes les pièces",
+        "state": {
+          "schedule": "Planning",
+          "comfort": "Confort",
+          "eco": "Éco",
+          "frost": "Hors-gel"
+        }
       }
     }
   }

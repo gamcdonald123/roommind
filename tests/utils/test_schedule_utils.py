@@ -1777,6 +1777,13 @@ class TestOverrideBands:
     def test_boost_preset_is_comfort_band(self):
         assert override_preset_band(self.ROOM, "boost") == (21.5, 24.0)
 
+    def test_frost_preset_heats_to_frost_temp_and_cools_at_eco(self):
+        assert override_preset_band(self.ROOM, "frost") == (7.0, 27.5)
+        assert override_preset_band(self.ROOM, "frost", {"frost_temp": 10.0}) == (10.0, 27.5)
+
+    def test_frost_cool_side_never_below_frost_temp(self):
+        assert override_preset_band({"eco_cool": 8.0}, "frost", {"frost_temp": 10.0}) == (10.0, 10.0)
+
     def test_legacy_single_temps_fall_back(self):
         room = {"eco_temp": 16.0, "comfort_temp": 22.0}
         assert override_preset_band(room, "eco") == (16.0, 27.0)

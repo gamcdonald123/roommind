@@ -148,3 +148,49 @@ export function quickMessage(config: RoomConfig, value: QuickValue): Record<stri
     true,
   );
 }
+
+/* ---------- All rooms at once (overview) ---------- */
+
+export const FROST_ICON = "mdi:snowflake-thermometer";
+
+export type AllRoomsValue = "schedule" | "comfort" | "eco" | "frost";
+
+const ALL_ROOMS_TYPES: Record<OverrideType, AllRoomsValue | null> = {
+  boost: "comfort",
+  eco: "eco",
+  frost: "frost",
+  custom: null,
+};
+
+/** A room's value for the all-rooms choice: an override without end, or none; null otherwise. */
+function roomAllValue(live: RoomLiveData | undefined): AllRoomsValue | null {
+  if (!live?.override_active || !live.override_type) return "schedule";
+  if (live.override_until != null) return null;
+  return ALL_ROOMS_TYPES[live.override_type];
+}
+
+/** The choice every given room is on, null when they differ or there are none. */
+export function allRoomsValueOf(rooms: (RoomLiveData | undefined)[]): AllRoomsValue | null {
+  const values = new Set(rooms.map(roomAllValue));
+  return values.size === 1 ? [...values][0] : null;
+}
+
+export function allRoomsOptions(
+  language: string,
+): { value: AllRoomsValue; label: string; icon: string }[] {
+  return [
+    {
+      value: "schedule",
+      label: localize("card.quick.schedule", language),
+      icon: "mdi:calendar-clock",
+    },
+    { value: "comfort", label: localize("override.comfort", language), icon: "mdi:sofa" },
+    { value: "eco", label: localize("override.eco", language), icon: "mdi:leaf" },
+    { value: "frost", label: localize("override.frost_short", language), icon: FROST_ICON },
+  ];
+}
+
+/** WS message: every room to this choice until changed; "schedule" ends their overrides. */
+export function allRoomsMessage(value: AllRoomsValue): Record<string, unknown> {
+  return { type: "roommind/override/set_all", mode: value };
+}

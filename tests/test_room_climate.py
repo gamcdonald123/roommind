@@ -537,7 +537,26 @@ async def test_same_mode_leaves_the_held_band_alone(setup):
 
 def test_manual_preset_is_offered(setup):
     make, *_ = setup
-    assert make().preset_modes == ["none", "comfort", "eco", "manual"]
+    assert make().preset_modes == ["none", "comfort", "eco", "frost", "manual"]
+
+
+@pytest.mark.asyncio
+async def test_frost_preset_holds_the_frost_band(setup):
+    make, _, store, _ = setup
+    store.get_settings.return_value = {"frost_temp": 8.0}
+    await make().async_set_preset_mode("frost")
+    assert _written(store) == {
+        "override_heat": 8.0,
+        "override_cool": 27.0,
+        "override_until": NEXT_EVENT.timestamp(),
+        "override_type": "frost",
+    }
+
+
+def test_frost_override_shows_frost_preset(setup):
+    make, *_ = setup
+    room = _room(override_heat=7.0, override_cool=27.0, override_type="frost", override_until=None)
+    assert make(room).preset_mode == "frost"
 
 
 @pytest.mark.asyncio
